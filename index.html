@@ -1,0 +1,300 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Sample Three.js</title>
+		<style>
+			#container {
+				background: #000;
+				width: 400px;
+				height: 300px;
+			}
+			#doc{
+				float:right;
+				/*position: absolute;*/
+				font-size: large;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="container">
+		</div>
+
+		<div id="doc">
+			BOUYA RILEY :p
+		</div>
+
+	</body>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r67/three.min.js"></script>
+	<script src="js/THREEx.KeyboardState.js"></script>
+	<script src="js/OrbitControls.js"></script>
+	<script type="text/javascript">
+
+	// set the scene size
+	var WIDTH = window.innerWidth - 20,
+	    HEIGHT = window.innerHeight - 20;
+
+	// set some camera attributes
+	var VIEW_ANGLE = 45,
+	    ASPECT = WIDTH / HEIGHT,
+	    NEAR = 0.1,
+	    FAR = 10000;
+
+	// get the DOM element to attach to
+	// - assume we've got jQuery to hand
+	var $container = $('#container');
+
+	// create a WebGL renderer, camera
+	// and a scene
+	var renderer = new THREE.WebGLRenderer();
+	var camera = new THREE.PerspectiveCamera(  VIEW_ANGLE,
+	                                ASPECT,
+	                                NEAR,
+	                                FAR  );
+	var scene = new THREE.Scene();
+  var sphere,player;
+	var keyboard = new THREEx.KeyboardState();
+	var controls = new THREE.OrbitControls( camera, renderer.domElement );
+	var clock = new THREE.Clock();
+
+init();
+renderAxis();
+animate();
+
+
+function init () {
+
+	// the camera starts at 0,0,0 so pull it back
+	camera.position.z = 200;
+	camera.position.x = 0;
+	camera.position.y = 0;
+
+	// start the renderer
+	renderer.setSize(WIDTH, HEIGHT);
+
+	// attach the render-supplied DOM element
+	$container.append(renderer.domElement);
+
+	// create the sphere's material
+	var sphereMaterial = new THREE.MeshLambertMaterial(
+	{
+	    color: 0xFFFFFF,
+	    wireframe: true,
+	   transparent: false,
+	   opacity:0.8
+	});
+
+	// set up the sphere vars
+	var radius = 100, segments = 32, rings = 32;
+	var playField = radius;
+
+	// create a new mesh with sphere geometry -
+	// we will cover the sphereMaterial next!
+	sphere = new THREE.Mesh(
+	   new THREE.SphereGeometry(radius, segments, rings),
+	   sphereMaterial);
+
+ player = new THREE.Mesh(new THREE.SphereGeometry(1,8,8),sphereMaterial);
+	player.position.x = 0;
+	player.position.y = 0;
+	player.position.z = playField;
+
+	// add the sphere to the scene
+	scene.add(sphere);
+	scene.add(player);
+
+	// and the camera
+	scene.add(camera);
+
+      var ambientLight = new THREE.AmbientLight(0x000044);
+      scene.add(ambientLight);
+
+	// create a point light
+	var pointLight = new THREE.PointLight( 0xFFFFFF );
+
+	// set its position
+	pointLight.position.x = 100;
+	pointLight.position.y = 100;
+	pointLight.position.z = 300;
+
+	// add to the scene
+	scene.add(pointLight);
+	// camera.lookAt(player.position);
+
+}
+	// renderer.render(scene, camera);
+
+function renderAxis () {
+	  var material = new THREE.LineBasicMaterial({
+        color: 0xbada55
+    });
+	   var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+    geometry.vertices.push(new THREE.Vector3(125, 10, 0));
+    geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+    geometry.vertices.push(new THREE.Vector3(0, 125, 0));
+    geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+    geometry.vertices.push(new THREE.Vector3(0, 0, 125));
+    geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+    geometry.vertices.push(new THREE.Vector3(player.position.x, player.position.y, player.position.z));
+    // geometry.vertices.push(new THREE.Vector3(10, 0, 0));
+     var line = new THREE.Line(geometry, material);
+      scene.add(line);
+}
+
+function render()
+{
+	// draw!
+	renderer.render( scene, camera );
+}
+var phi, theta;
+function update()
+{
+		var delta = clock.getDelta(); // seconds.
+var moveDistance = 15 * delta; // 10 pixels per second
+var rotateAngle = Math.PI / 20 * delta; // pi/2 radians (90 degrees) per second
+
+var oldPlayerPosition = {};
+	oldPlayerPosition.x = player.position.x;
+	oldPlayerPosition.y = player.position.y;
+	oldPlayerPosition.z = player.position.z;
+
+	// global coordinates
+if ( keyboard.pressed("left") ){
+	player.position.x -= moveDistance;
+	// sphere.rotation.z += 0.01;
+	player.rotation.x += 0.1;
+
+
+	var x1 = player.position.x,
+	y1 =player.position.y,
+	z1 = player.position.z,
+	len = Math.sqrt(x1*x1 + y1*y1 + z1*z1),   // get length of vector
+	radius = 100,
+	unit = radius/len,
+	ScaledVector={x:unit*x1,
+				  y:unit*y1,
+				  z:unit*z1
+				};
+
+
+		player.position.x = ScaledVector.x;
+	player.position.y = ScaledVector.y;
+	player.position.z = ScaledVector.z;
+}
+if ( keyboard.pressed("right") ){
+	player.position.x += moveDistance;
+	// sphere.rotation.z -= 0.01;
+	player.rotation.x -= 0.1;
+
+var x1 = player.position.x,
+	y1 =player.position.y,
+	z1 = player.position.z,
+	len = Math.sqrt(x1*x1 + y1*y1 + z1*z1),   // get length of vector
+	radius = 100,
+	unit = radius/len,
+	ScaledVector={x:unit*x1,
+				  y:unit*y1,
+				  z:unit*z1
+				};
+	player.position.x = ScaledVector.x;
+	player.position.y = ScaledVector.y;
+	player.position.z = ScaledVector.z;
+}
+if ( keyboard.pressed("up") ){
+	player.position.y += moveDistance;
+	// sphere.rotation.x += 0.01;
+	player.rotation.z += 0.1;
+
+	var x1 = player.position.x,
+	y1 =player.position.y,
+	z1 = player.position.z,
+	len = Math.sqrt(x1*x1 + y1*y1 + z1*z1),   // get length of vector
+	radius = 100,
+	unit = radius/len,
+	ScaledVector={x:unit*x1,
+				  y:unit*y1,
+				  z:unit*z1
+				};
+	player.position.x = ScaledVector.x;
+	player.position.y = ScaledVector.y;
+	player.position.z = ScaledVector.z;
+}
+if ( keyboard.pressed("down") ){
+	player.position.y -= moveDistance;
+	// sphere.rotation.x -= 0.01;
+	player.rotation.z -= 0.1;
+
+var x1 = player.position.x,
+	y1 =player.position.y,
+	z1 = player.position.z,
+	len = Math.sqrt(x1*x1 + y1*y1 + z1*z1),   // get length of vector
+	radius = 100,
+	unit = radius/len,
+	ScaledVector={x:unit*x1,
+				  y:unit*y1,
+				  z:unit*z1
+				};
+	player.position.x = ScaledVector.x;
+	player.position.y = ScaledVector.y;
+	player.position.z = ScaledVector.z;
+
+}
+		player.rotation.x -=0.05;
+
+
+	// player.position.x = ScaledVector.x;
+	// player.position.y = ScaledVector.y;
+	// player.position.z = ScaledVector.z;
+
+console.log("Scaledv: ");
+console.log(len);
+console.log(unit);
+console.log(radius);
+// console.log(ScaledVector);
+console.log(ScaledVector);
+		// sphere.rotation.x += 0.01	;
+		// sphere.rotation.y -= 0.01;//Math.cos( Math.PI );
+		// player.translateZ(0.05);
+		// player.translateX(0.01);
+		// player.translateY(0.1);
+		// player.position.x =sphere.rotation.x;
+		// player.position.y -=0.001;
+		// sphere.rotation.z -= Math.sin( Math.PI ) * Math.cos( Math.PI );
+
+
+	// camera.position.x = (player.position.x*camera.position.x) /oldPlayerPosition.x;
+	// camera.position.y = (player.position.y*camera.position.y) /oldPlayerPosition.y;
+	// camera.position.z = (player.position.z*camera.position.z) /oldPlayerPosition.z;
+
+	//  newCamPos = {
+	// 	x:camera.position.x,
+	// 	y:camera.position.y,
+	// 	z: playField*2
+	// }
+
+
+	 newCamPos = {
+		x:player.position.x*2,
+		y:player.position.y*2,
+		z:-player.position.z*2
+	}
+
+	camera.lookAt(newCamPos);
+	// camera.lookAt(player.position);
+	controls.update();
+	renderAxis();
+	// stats.update();
+}
+	var newCamPos;
+function animate()
+{
+  requestAnimationFrame( animate );
+	render();
+	update();
+}
+
+	</script>
+</html>
